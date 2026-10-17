@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>App Service Demo</title>
+  <style>
+    :root { --navy:#14213d; --amber:#fca311; --ice:#eaf2ff; --muted:#6b7a99; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Segoe UI, Calibri, Arial, sans-serif; background:var(--ice); color:var(--navy); }
+    header { background:var(--navy); color:#fff; padding:2rem 1.5rem; }
+    header h1 { margin:0 0 .4rem; font-size:1.7rem; }
+    header p { margin:0; color:var(--ice); }
+    main { max-width:720px; margin:1.5rem auto; padding:0 1rem; }
+    .card { background:#fff; border-radius:10px; padding:1.25rem 1.5rem; box-shadow:0 1px 4px rgba(20,33,61,.12); }
+    .badge { display:inline-block; padding:.2rem .7rem; border-radius:999px; font-size:.85rem; font-weight:600; }
+    .on  { background:var(--amber); color:var(--navy); }
+    .off { background:#d7e3f5; color:var(--navy); }
+    dl { display:grid; grid-template-columns:max-content 1fr; gap:.5rem 1.25rem; margin:1rem 0 0; }
+    dt { color:var(--muted); }
+    dd { margin:0; font-weight:600; word-break:break-word; }
+    button { margin-top:1.25rem; background:var(--navy); color:#fff; border:0; border-radius:8px; padding:.6rem 1.1rem; font-size:1rem; cursor:pointer; }
+    button:hover { background:#1e2e57; }
+    footer { text-align:center; color:var(--muted); font-size:.85rem; padding:1.5rem; }
+    .error { color:#b00020; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="greeting">Chargement…</h1>
+    <p>Application .NET de démonstration pour Azure App Service</p>
+  </header>
+  <main>
+    <div class="card">
+      <span id="badge" class="badge off">…</span>
+      <dl id="info"></dl>
+      <button id="refresh" type="button">Actualiser</button>
+      <p id="error" class="error" hidden></p>
+    </div>
+  </main>
+  <footer>Pages : <a href="/api/info">/api/info</a> · <a href="/health">/health</a></footer>
+
+  <script>
+    const labels = {
+      siteName: "Nom du site", instanceId: "Instance", machineName: "Machine",
+      environment: "Environnement", framework: "Framework", os: "Système", utcTime: "Heure (UTC)"
+    };
+    async function load() {
+      const err = document.getElementById("error");
+      err.hidden = true;
+      try {
+        const r = await fetch("/api/info", { cache: "no-store" });
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        const d = await r.json();
+        document.getElementById("greeting").textContent = d.greeting;
+        const badge = document.getElementById("badge");
+        badge.textContent = d.runningOnAppService ? "Exécuté sur Azure App Service" : "Exécution locale";
+        badge.className = "badge " + (d.runningOnAppService ? "on" : "off");
+        const dl = document.getElementById("info");
+        dl.replaceChildren();
+        for (const [key, label] of Object.entries(labels)) {
+          const dt = document.createElement("dt"); dt.textContent = label;
+          const dd = document.createElement("dd");
+          dd.textContent = key === "utcTime" ? new Date(d[key]).toISOString().replace("T", " ").slice(0, 19) : d[key];
+          dl.append(dt, dd);
+        }
+      } catch (e) {
+        err.textContent = "Impossible de charger /api/info (" + e.message + ")";
+        err.hidden = false;
+      }
+    }
+    document.getElementById("refresh").addEventListener("click", load);
+    load();
+  </script>
+</body>
+</html>
