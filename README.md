@@ -42,7 +42,7 @@ az webapp up --name <nom-unique> --resource-group rg-appservice-demo \
 
 `az webapp up` détecte le projet .NET, crée le plan et la Web App, puis déploie le code.
 
-## Expériences à faire pendant le tutoriel
+## Expériences tutoriel
 
 - **App settings** : dans *Environment variables*, ajoute un réglage `Greeting` avec le texte de ton choix, enregistre, puis recharge la page. Le titre change sans redéploiement.
 - **Scale-out** : passe le plan à 2 instances, puis actualise la page plusieurs fois. Le champ *Instance* change selon l'instance qui répond.
